@@ -62,10 +62,10 @@
 
   - name: "Ensure firewall zones exist"
     ansible.posix.firewalld:
-      zone: "{{ firewalld_zones[item]['zone'] }}"
+      zone: "{{ firewalld_zones[item] }}"
       permanent: true
       state: present
-    when: firewalld_zones[item]['zone'] is defined
+    when: firewalld_zones is defined
     loop: "{{ firewalld_zones }}"
     notify: Restart filewalld
 
