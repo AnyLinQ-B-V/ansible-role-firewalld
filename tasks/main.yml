@@ -62,23 +62,23 @@
 
   - name: "Ensure firewall zones exist"
     ansible.posix.firewalld:
-      zone: "{{ item.name }}"
+      zone: "{{ item }}"
       permanent: true
       state: present
     when: firewalld_zones is defined
     loop: "{{ firewalld_zones }}"
-    notify: Restart filewalld
+    notify: Restart firewalld
 
-  - name: "Configure firewall zones"
-    ansible.posix.firewalld:
-      zone: "{{ item.name }}"
-      source: "{{ item.subnet }}/{{ item.prefix }}"
-      permanent: true
-      state: present
-    when: firewalld_zones is defined
-    loop: "{{ firewalld_zones }}"
-    notify: Restart filewalld
-
+  - name: Set firewalld zone source
+    firewalld:
+      zone: "{{ item.0.zone }}"
+      permanent: "{{ item.0.permanent|default('true') }}"
+      immediate: "{{ item.0.immediate|default('true') }}"
+      state: "{{ item.0.state|default('enabled') }}"
+      source: "{{ item.1 }}"
+    with_subelements:
+      - "{{ firewalld_zone_source|default({}) }}"
+      - "source"
 
   - meta: flush_handlers
 

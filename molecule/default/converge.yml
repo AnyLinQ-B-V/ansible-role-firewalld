@@ -6,25 +6,56 @@
     - community.general
   vars:
     firewalld_managed: true
+    firewalld_enabled: true
+    firewalld_state: started
+    firewalld_purge_services: true
+
     firewalld_zones:
-      - name: public
-        services_enabled:
-          - ssh
-      - name: lan
-        subnet: 10.1.1.0
-        prefix: 24
-        services_enabled:
-          - ssh
-      - name: vpn1
-        subnet: 10.5.0.0
-        prefix: 16
-        services_enabled:
-          - ssh
-      - name: vpn2
-        subnet: 10.10.0.0
-        prefix: 16
-        services_disabled:
-          - ssh
+      - public
+      - internal
+      - trusted
+      - external
+
+    firewalld_zone_source:
+      internal:
+        zone: internal
+        source: 10.1.1.0/24
+        state: enabled
+        permanent: true
+        immediate: true
+      trusted:
+        zone: trusted
+        source: 10.5.0.0/16
+        state: enabled
+        permanent: true
+        immediate: true
+      external:
+        zone: external
+        source: 10.10.0.0/16
+        state: enabled
+        permanent: true
+        immediate: true
+
+    firewalld_service_rules:
+      ssh_public:
+        service: ssh
+        zone: public
+        state: enabled
+        permanent: true
+        immediate: true
+      ssh_internal:
+        service: ssh
+        zone: internal
+        state: enabled
+        permanent: true
+        immediate: true
+      ssh_trusted:
+        service: ssh
+        zone: trusted
+        state: enabled
+        permanent: true
+        immediate: true
+
   tasks:
     - name: Run role
       ansible.builtin.include_role:
