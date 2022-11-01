@@ -4,7 +4,6 @@
 firewalld_managed: false
 firewalld_enabled: true
 firewalld_state: started
-firewalld_purge_services: false
 
 firewalld_zones:
   - public

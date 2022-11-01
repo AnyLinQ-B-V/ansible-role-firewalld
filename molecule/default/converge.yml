@@ -8,7 +8,6 @@
     firewalld_managed: true
     firewalld_enabled: true
     firewalld_state: started
-    firewalld_purge_services: true
 
     firewalld_zones:
       - public
