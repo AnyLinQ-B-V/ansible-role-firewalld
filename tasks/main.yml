@@ -72,11 +72,11 @@
   - name: "Configure firewall zones"
     ansible.posix.firewalld:
       zone: "{{ item.name }}"
-      source: "{{ item['subnet'] }}/{{ item['prefix'] }}"
+      source: "{{ item.subnet }}/{{ item.prefix }}"
       permanent: true
       state: present
     when: firewalld_zones is defined
-    loop: firewalld_zones
+    loop: "{{ firewalld_zones }}
     notify: Restart filewalld
 
 
