@@ -19,19 +19,22 @@
     firewalld_zone_source:
       internal:
         zone: internal
-        source: 10.1.1.0/24
+        source:
+          - "10.1.1.0/24"
         state: enabled
         permanent: true
         immediate: true
       trusted:
         zone: trusted
-        source: 10.5.0.0/16
+        source:
+          - "10.5.0.0/16"
         state: enabled
         permanent: true
         immediate: true
       external:
         zone: external
-        source: 10.10.0.0/16
+        source:
+          - "10.10.0.0/16"
         state: enabled
         permanent: true
         immediate: true
