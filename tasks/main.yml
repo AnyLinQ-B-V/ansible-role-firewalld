@@ -81,7 +81,7 @@
       - "source"
 
   - name: Get active firewalld service rules
-    ansible.builtin.shell: set -o pipefail; /bin/firewall-cmd --list-services | sed -e 's/ /\n/g'
+    ansible.builtin.shell: set -o pipefail; /usr/sbin/firewalld --list-services | sed -e 's/ /\n/g'
     args:
       executable: /bin/bash
     register: active_services
@@ -98,7 +98,7 @@
     when: firewalld_purge_services and item not in firewalld_service_rules
 
   - name: Get active firewalld port rules
-    ansible.builtin.shell: set -o pipefail; /bin/firewall-cmd --list-ports | sed -e 's/ /\n/g'
+    ansible.builtin.shell: set -o pipefail; /usr/sbin/firewalld --list-ports | sed -e 's/ /\n/g'
     args:
       executable: /bin/bash
     register: active_ports
