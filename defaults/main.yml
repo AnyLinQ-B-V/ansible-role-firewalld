@@ -1,2 +1,28 @@
 ---
-# defaults file for ansibletemplate
+# defaults file for firewalld
+
+firewalld_managed: false
+firewalld_enabled: yes
+firewalld_state: started
+
+firewalld_zones:
+  - public:
+    subnet: 10.1.0.0
+    prefix: 24
+    services_enabled:
+      - ssh
+  - lan:
+    subnet: 10.1.1.0
+    prefix: 24
+    services_enabled:
+      - ssh
+  - vpn1:
+    subnet: 10.5.0.0
+    prefix: 16
+    services_enabled:
+      - ssh
+  - vpn2:
+    subnet: 10.10.0.0
+    prefix: 16
+    services_disabled:
+      - ssh

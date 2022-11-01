@@ -6,6 +6,68 @@
   become: true
   gather_facts: false
   tasks:
-  - name: Example assertion
-    ansible.builtin.assert:
-      that: true
+    - name: Run when managed
+      block:
+        - name: Collect package facts
+          package_facts:
+
+        - name: Check firewalld package
+          assert:
+            that: "'firewalld' in ansible_facts.packages"
+
+        - name: Collect service facts
+          service_facts:
+
+        - name: Check firewalld service is present
+          assert:
+            that: "'firewalld.service' in ansible_facts.services"
+
+        - name: Check firewalld service is running
+          assert:
+            that: "ansible_facts.services['firewalld.service']['state'] == 'running'"
+
+        - name: Check firewalld service is enabled
+          assert:
+            that: "ansible_facts.services['firewalld.service']['status'] == 'enabled'"
+
+        - name: Collect sources of zone public
+          command: firewall-cmd --zone=public --list-sources
+          register: firewall_cmd_result
+          when: true
+
+        - name: Check wan (10.1.0.0/24) is in zone public
+          assert:
+            that: "firewall_cmd_result.stdout == '10.1.0.0.0/24'"
+            fail_msg: "Current values: {{ firewall_cmd_result.stdout }}"
+
+        - name: Collect sources of zone lan
+          command: firewall-cmd --zone=lan --list-sources
+          register: firewall_cmd_result
+          when: true
+
+        - name: Check lan (10.11.1.0/24) is in zone trlanusted
+          assert:
+            that: "firewall_cmd_result.stdout == '10.1.1.0/24'"
+            fail_msg: "Current values: {{ firewall_cmd_result.stdout }}"
+
+        # - name: "Zone internal: collect services"
+        #   command: firewall-cmd --zone=internal --list-services
+        #   register: internal_services_result
+        #   when: true
+
+        # - name: "Zone internal: collect ports"
+        #   command: firewall-cmd --zone=internal --list-ports
+        #   register: internal_ports_result
+        #   when: true
+
+        # - name: "Zone internal: collect rich rules"
+        #   command: firewall-cmd --zone=internal --list-rich-rules
+        #   register: internal_rich_rules_result
+        #   when: true
+
+        # - name: "Zone internal: collect ICMP blocks"
+        #   command: firewall-cmd --zone=internal --list-icmp-blocks
+        #   register: internal_icmp_blocks_result
+        #   when: true
+
+      when: firewalld_manager is defined

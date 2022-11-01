@@ -1,2 +1,82 @@
 ---
-# tasks file for ansibletemplate
+# tasks file for firewalld
+- name: Manage firewalld if firewalld_managed is set
+  block:
+
+  - name: Load variables based on OS type
+    ansible.builtin.include_vars: "{{ item }}"
+    with_first_found:
+      - files:
+          - "vars/{{ ansible_facts.distribution | replace(' ','_') }}_{{ ansible_facts.distribution_major_version }}.yml"
+          - "vars/{{ ansible_facts.os_family }}_{{ ansible_facts.distribution_major_version }}.yml"
+          - "vars/{{ ansible_facts.distribution | replace(' ','_') }}.yml"
+          - "vars/{{ ansible_facts.os_family }}.yml"
+          - default.yml
+
+  - name: Install firewalld packages
+    ansible.builtin.package:
+      name: "{{ item }}"
+      state: present
+    loop: "{{ firewalld_packages }}"
+
+  - name: Populate service facts
+    ansible.builtin.service_facts:
+
+  - name: Disable iptables
+    ansible.builtin.systemd:
+      name: iptables
+      state: stopped
+      enabled: no
+      masked: yes
+      daemon_reload: yes
+    when:
+      - ansible_facts.services['iptables.service'] is defined
+      - ansible_facts.services['iptables.service']['status'] not in [ 'disabled', 'not-found' ]
+
+  - name: Disable ufw
+    ansible.builtin.systemd:
+      name: ufw
+      state: stopped
+      enabled: no
+      masked: yes
+      daemon_reload: yes
+    when:
+      - ansible_facts.services['ufw.service'] is defined
+      - ansible_facts.services['ufw.service']['status'] not in [ 'disabled', 'not-found' ]
+
+  - name: Ensure filewalld state
+    ansible.builtin.service:
+      name: firewalld
+      state: "{{ firewalld_state }}"
+      enabled: "{{ firewalld_enabled | default('yes' ) }}"
+      masked: no
+      daemon_reload: yes
+
+  - name: Set public interface
+    ansible.posix.firewalld:
+      zone: public
+      interface: "{{ ansible_default_ipv4.interface }}"
+      permanent: true
+      immediate: true
+      state: enabled
+
+  - name: Permit SSH traffic (even when not defined in service list for our purposes)
+    ansible.posix.firewalld:
+      service: ssh
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: "Ensure firewall zones exist"
+    ansible.posix.firewalld:
+      zone: "{{ firewalld_zones[item]['zone'] }}"
+      permanent: yes
+      state: present
+    when: firewalld_zones[item]['zone'] is defined
+    loop: "{{ firewalld_zones }}"
+    notify: Restart filewalld
+
+  - meta: flush_handlers
+
+  when: firewalld_managed
