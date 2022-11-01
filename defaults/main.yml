@@ -7,8 +7,6 @@ firewalld_state: started
 
 firewalld_zones:
   - public:
-    subnet: 10.1.0.0
-    prefix: 24
     services_enabled:
       - ssh
   - lan:
