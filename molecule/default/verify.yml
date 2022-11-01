@@ -50,4 +50,4 @@
             that: "firewall_cmd_result.stdout == '10.1.1.0/24'"
             fail_msg: "Current values: {{ firewall_cmd_result.stdout }}"
 
-      when: firewalld_manager is defined
+      when: firewalld_managed is defined

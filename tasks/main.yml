@@ -70,7 +70,7 @@
     notify: Restart firewalld
 
   - name: Set firewalld zone source
-    firewalld:
+    ansible.posix.firewalld:
       zone: "{{ item.0.zone }}"
       permanent: "{{ item.0.permanent|default('true') }}"
       immediate: "{{ item.0.immediate|default('true') }}"
@@ -79,6 +79,67 @@
     with_subelements:
       - "{{ firewalld_zone_source|default({}) }}"
       - "source"
+
+  - name: Get active firewalld service rules
+    ansible.builtin.shell: set -o pipefail; /bin/firewall-cmd --list-services | sed -e 's/ /\n/g'
+    args:
+      executable: /bin/bash
+    register: active_services
+    changed_when: false
+
+  - name: Purge unconfigured firewalld service rules
+    ansible.posix.firewalld:
+      service: "{{ item }}"
+      permanent: true
+      immediate: true
+      state: disabled
+      zone: "{{ default_zone|default('public') }}"
+    with_items: "{{ active_services.stdout_lines }}"
+    when: firewalld_purge_services and item not in firewalld_service_rules
+
+  - name: Get active firewalld port rules
+    ansible.builtin.shell: set -o pipefail; /bin/firewall-cmd --list-ports | sed -e 's/ /\n/g'
+    args:
+      executable: /bin/bash
+    register: active_ports
+    changed_when: false
+
+  - name: Purge unconfigured firewalld port rules
+    ansible.posix.firewalld:
+      port: "{{ item }}"
+      permanent: true
+      immediate: true
+      state: disabled
+      zone: "{{ default_zone|default('public') }}"
+    with_items: "{{ active_ports.stdout_lines }}"
+    when: firewalld_purge_services and item not in firewalld_service_rules
+
+  - name: Set firewalld service rules
+    ansible.posix.firewalld:
+      service: "{{ item.value.service | default(item.key) }}"
+      permanent: "{{ item.value.permanent|default('true') }}"
+      immediate: "{{ item.value.immediate|default('true') }}"
+      state: "{{ item.value.state|default('enabled') }}"
+      zone: "{{ item.value.zone|default('public') }}"
+    with_dict: "{{ firewalld_service_rules|default({}) }}"
+
+  - name: Set firewalld port rules
+    firewalld:
+      port: "{{ item.value.port }}/{{ item.value.protocol|default('tcp') }}"
+      permanent: "{{ item.value.permanent|default('true') }}"
+      immediate: "{{ item.value.immediate|default('true') }}"
+      state: "{{ item.value.state|default('enabled') }}"
+      zone: "{{ item.value.zone|default('public') }}"
+    with_dict: "{{ firewalld_port_rules|default({}) }}"
+
+  - name: Set firewalld rich rules
+    firewalld:
+      rich_rule: "{{ item.value.rule }}"
+      permanent: "{{ item.value.permanent|default('true') }}"
+      immediate: "{{ item.value.immediate|default('true') }}"
+      state: "{{ item.value.state|default('enabled') }}"
+      zone: "{{ item.value.zone|default('public') }}"
+    with_dict: "{{ firewalld_rich_rules|default({}) }}"
 
   - meta: flush_handlers
 
