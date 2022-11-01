@@ -76,7 +76,7 @@
       permanent: true
       state: present
     when: firewalld_zones is defined
-    loop: "{{ firewalld_zones }}
+    loop: "{{ firewalld_zones }}"
     notify: Restart filewalld
 
 
