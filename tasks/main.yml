@@ -62,7 +62,7 @@
 
   - name: "Ensure firewall zones exist"
     ansible.posix.firewalld:
-      zone: "{{ item }}"
+      zone: "{{ item.name }}"
       permanent: true
       state: present
     when: firewalld_zones is defined
