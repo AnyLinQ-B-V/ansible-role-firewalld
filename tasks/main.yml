@@ -26,9 +26,9 @@
     ansible.builtin.systemd:
       name: iptables
       state: stopped
-      enabled: no
-      masked: yes
-      daemon_reload: yes
+      enabled: false
+      masked: true
+      daemon_reload: true
     when:
       - ansible_facts.services['iptables.service'] is defined
       - ansible_facts.services['iptables.service']['status'] not in [ 'disabled', 'not-found' ]
@@ -37,9 +37,9 @@
     ansible.builtin.systemd:
       name: ufw
       state: stopped
-      enabled: no
-      masked: yes
-      daemon_reload: yes
+      enabled: false
+      masked: true
+      daemon_reload: true
     when:
       - ansible_facts.services['ufw.service'] is defined
       - ansible_facts.services['ufw.service']['status'] not in [ 'disabled', 'not-found' ]
@@ -48,30 +48,22 @@
     ansible.builtin.service:
       name: firewalld
       state: "{{ firewalld_state }}"
-      enabled: "{{ firewalld_enabled | default('yes' ) }}"
-      masked: no
-      daemon_reload: yes
-
-  - name: Set public interface
-    ansible.posix.firewalld:
-      zone: public
-      interface: "{{ ansible_default_ipv4.interface }}"
-      permanent: true
-      immediate: true
-      state: enabled
+      enabled: "{{ firewalld_enabled | default('true' ) }}"
+      masked: false
+      daemon_reload: true
 
   - name: Permit SSH traffic (even when not defined in service list for our purposes)
     ansible.posix.firewalld:
       service: ssh
       zone: public
-      permanent: yes
-      immediate: yes
+      permanent: true
+      immediate: true
       state: enabled
 
   - name: "Ensure firewall zones exist"
     ansible.posix.firewalld:
       zone: "{{ firewalld_zones[item]['zone'] }}"
-      permanent: yes
+      permanent: true
       state: present
     when: firewalld_zones[item]['zone'] is defined
     loop: "{{ firewalld_zones }}"

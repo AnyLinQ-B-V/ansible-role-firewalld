@@ -50,24 +50,4 @@
             that: "firewall_cmd_result.stdout == '10.1.1.0/24'"
             fail_msg: "Current values: {{ firewall_cmd_result.stdout }}"
 
-        # - name: "Zone internal: collect services"
-        #   command: firewall-cmd --zone=internal --list-services
-        #   register: internal_services_result
-        #   when: true
-
-        # - name: "Zone internal: collect ports"
-        #   command: firewall-cmd --zone=internal --list-ports
-        #   register: internal_ports_result
-        #   when: true
-
-        # - name: "Zone internal: collect rich rules"
-        #   command: firewall-cmd --zone=internal --list-rich-rules
-        #   register: internal_rich_rules_result
-        #   when: true
-
-        # - name: "Zone internal: collect ICMP blocks"
-        #   command: firewall-cmd --zone=internal --list-icmp-blocks
-        #   register: internal_icmp_blocks_result
-        #   when: true
-
       when: firewalld_manager is defined
