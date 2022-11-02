@@ -107,6 +107,33 @@
       zone: "{{ item.value.zone|default('public') }}"
     with_dict: "{{ firewalld_rich_rules|default({}) }}"
 
+  - name: Set per host firewalld service rules
+    ansible.posix.firewalld:
+      service: "{{ item.value.service | default(item.key) }}"
+      permanent: "{{ item.value.permanent|default('true') }}"
+      immediate: "{{ item.value.immediate|default('true') }}"
+      state: "{{ item.value.state|default('enabled') }}"
+      zone: "{{ item.value.zone|default('public') }}"
+    with_dict: "{{ firewalld_service_per_host_rules|default({}) }}"
+
+  - name: Set per host firewalld port rules
+    firewalld:
+      port: "{{ item.value.port }}/{{ item.value.protocol|default('tcp') }}"
+      permanent: "{{ item.value.permanent|default('true') }}"
+      immediate: "{{ item.value.immediate|default('true') }}"
+      state: "{{ item.value.state|default('enabled') }}"
+      zone: "{{ item.value.zone|default('public') }}"
+    with_dict: "{{ firewalld_port_per_host_rules|default({}) }}"
+
+  - name: Set per host firewalld rich rules
+    firewalld:
+      rich_rule: "{{ item.value.rule }}"
+      permanent: "{{ item.value.permanent|default('true') }}"
+      immediate: "{{ item.value.immediate|default('true') }}"
+      state: "{{ item.value.state|default('enabled') }}"
+      zone: "{{ item.value.zone|default('public') }}"
+    with_dict: "{{ firewalld_rich_per_host_rules|default({}) }}"
+
   - meta: flush_handlers
 
   when: firewalld_managed
